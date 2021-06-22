@@ -59,7 +59,7 @@ A0: sbic DHT_PIN, DHT_BIT
 	ldi XL, low(DHT_RESPONSE)
 	ldi XH, High(DHT_RESPONSE)
 
-	ldi tmp0, 0
+	clr tmp0
 
 ; for tmp=0; tmp<5; tmp++    
 B0: 
@@ -92,11 +92,21 @@ C1: sbic DHT_PIN, DHT_BIT
 	cpi tmp2, BITS
 	brne B1
 	
+; Rotate bits in register
+	clr tmp5
+	ldi tmp6, BITS
+W0: rol tmp4
+	ror tmp5
+	dec tmp6
+	brne W0
+	mov  tmp4,tmp5   // now tmp4 is reversed value
+
 ;	DHT_RESPONSE[tmp++] = tmp4
 	st X+, tmp4
 ;	
 	inc tmp0
-	cpi tmp0, DHT_RESPONSE
+	nop
+	cpi tmp0, DHT_SIZE
 	brne B0
 
 
