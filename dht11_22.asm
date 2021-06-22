@@ -114,7 +114,9 @@ W0: rol tmp4
 	sts i_index, tmp0
 	cpi tmp0, DHT_SIZE
 	brne B0
-    
+
+
+; Расчет CRC = (DHT[0]+DHT[1]+DHT[2]+DHT[3])&0xFF
     clr tmp0
     ldi XL, low(DHT_RESPONSE)
     ldi XH, High(DHT_RESPONSE)
@@ -125,7 +127,19 @@ P0: ld tmp1, X+
     dec tmp2
     brne P0
     sts CRC, tmp0
-    nop
+
+; проверка CRC
+; DHT_OK = 1
+    ldi tmp1, 1
+    sts DHT_OK, tmp1
+
+    lds tmp1, DHT_RESPONSE+4
+    cp tmp0, tmp1
+    breq Exit_DHT
+; if CRC!=DHT[4] DHT_OK=0
+    clr tmp1
+    sts DHT_OK, tmp1
+
 Exit_DHT:    
 	ret
 
