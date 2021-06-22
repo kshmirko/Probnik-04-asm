@@ -18,14 +18,15 @@
 ;
 Read1WireData:
 
-	; set low on dht port for 18 ms
+	; устанавливаем низкий уровень на 18 мс
 	sbi DHT_DDR, DHT_BIT
 	cbi	DHT_PORT, DHT_BIT
 	nop	;	For syncro
 	
+	; задержка 18 мс
 	rcall Delay_18ms
 	
-	; set dht pin to input
+	; переводим порт во вход
 	sbi DHT_PORT, DHT_BIT
 	cbi	DHT_DDR, DHT_BIT
 	nop
@@ -60,6 +61,7 @@ A0: sbic DHT_PIN, DHT_BIT
 	ldi XH, High(DHT_RESPONSE)
 
 	clr tmp0
+	sts i_index, tmp0
 
 ; for tmp=0; tmp<5; tmp++    
 B0: 
@@ -70,7 +72,8 @@ B0:
 	ldi tmp3, 0x01
 	ldi tmp4, 0x00
 	; for tmp2=0; tmp2<8; tmp2++
-	ldi tmp2, 0
+	ldi tmp0, 0
+	sts j_index, tmp0
 B1: 
 	;while (!(DHT_PIN&(1<<DHT_BIT)));
 C0:	sbis DHT_PIN, DHT_BIT
@@ -88,8 +91,10 @@ C0:	sbis DHT_PIN, DHT_BIT
 C1: sbic DHT_PIN, DHT_BIT
 	rjmp C1
 
-	inc tmp2
-	cpi tmp2, BITS
+    lds tmp0, j_index
+	inc tmp0
+	sts j_index, tmp0
+	cpi tmp0, BITS
 	brne B1
 	
 ; Rotate bits in register
@@ -99,13 +104,14 @@ W0: rol tmp4
 	ror tmp5
 	dec tmp6
 	brne W0
-	mov  tmp4,tmp5   // now tmp4 is reversed value
+	mov  tmp4,tmp5   
 
 ;	DHT_RESPONSE[tmp++] = tmp4
 	st X+, tmp4
 ;	
+    lds tmp0, i_index
 	inc tmp0
-	nop
+	sts i_index, tmp0
 	cpi tmp0, DHT_SIZE
 	brne B0
 

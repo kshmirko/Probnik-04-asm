@@ -1,2 +1,7 @@
-; работа с TWI
+; Работа с TWI
+
+.macro SetupTWI
+
+.endm
+
 
