@@ -114,7 +114,16 @@ W0: rol tmp4
 	sts i_index, tmp0
 	cpi tmp0, DHT_SIZE
 	brne B0
+    
+    clr tmp0
+    ldi XL, low(DHT_RESPONSE)
+    ldi XH, High(DHT_RESPONSE)
+    ldi tmp2, DHT_SIZE
 
+P0: ld tmp1, X+
+    add tmp0, tmp1
+    dec tmp2
+    brne P0
 
 Exit_DHT:    
 	ret

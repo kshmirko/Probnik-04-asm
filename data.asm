@@ -10,5 +10,5 @@ author:		.db "Ph.D. Shmirko K.A. ",10,13,0
 DHT_RESPONSE:	.byte	DHT_SIZE
 i_index:      .byte 1
 j_index:      .byte 1
-
+CRC:          .byte 1
 .eseg
