@@ -118,7 +118,7 @@ W0: rol tmp4
     clr tmp0
     ldi XL, low(DHT_RESPONSE)
     ldi XH, High(DHT_RESPONSE)
-    ldi tmp2, DHT_SIZE
+    ldi tmp2, DHT_SIZE-1
 
 P0: ld tmp1, X+
     add tmp0, tmp1
