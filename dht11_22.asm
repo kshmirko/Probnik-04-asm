@@ -124,7 +124,8 @@ P0: ld tmp1, X+
     add tmp0, tmp1
     dec tmp2
     brne P0
-
+    sts CRC, tmp0
+    nop
 Exit_DHT:    
 	ret
 
