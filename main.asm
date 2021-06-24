@@ -23,7 +23,7 @@ Init:
 	UARTWriteStrZ header
 	UARTWriteStrZ author
 ; =============== Super Loop ==========================================
-    ldi tmp0, 0xFF
+    ldi tmp0, 0x00
     rcall LCD_Clear
 Loop:
 	rcall Read1WireData
