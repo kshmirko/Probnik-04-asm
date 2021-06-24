@@ -17,7 +17,8 @@
 ;
 ;
 Read1WireData:
-
+    ; сбрасываем прерывания
+    cli
 	; устанавливаем низкий уровень на 18 мс
 	sbi DHT_DDR, DHT_BIT
 	cbi	DHT_PORT, DHT_BIT
@@ -67,12 +68,12 @@ A0: sbic DHT_PIN, DHT_BIT
 B0: 
 	;X[tmp] = 0
 	clr tmp1
-	st X, tmp1
+;	st X, tmp1
 	
 	ldi tmp3, 0x01
-	ldi tmp4, 0x00
+	clr tmp4
 	; for tmp2=0; tmp2<8; tmp2++
-	ldi tmp0, 0
+	clr tmp0
 	sts j_index, tmp0
 B1: 
 	;while (!(DHT_PIN&(1<<DHT_BIT)));
@@ -121,7 +122,7 @@ W0: rol tmp4
     ldi XL, low(DHT_RESPONSE)
     ldi XH, High(DHT_RESPONSE)
     ldi tmp2, DHT_SIZE-1
-
+; for tmp2=DHT_SIZE-1 to 0
 P0: ld tmp1, X+
     add tmp0, tmp1
     dec tmp2
@@ -140,7 +141,9 @@ P0: ld tmp1, X+
     clr tmp1
     sts DHT_OK, tmp1
 
-Exit_DHT:    
+Exit_DHT:
+    ; разрешаем прерывания
+    sei
 	ret
 
 

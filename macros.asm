@@ -29,7 +29,7 @@
 .endm
 
 .macro TWIINIT
-	outi TWBR, (1<<TWBR3)|(1<<TWBR2)
+	outi TWBR, 72
 	outi TWSR, (0<<TWPS1)|(0<<TWPS0)
 .endm
 

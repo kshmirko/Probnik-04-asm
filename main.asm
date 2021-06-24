@@ -17,12 +17,14 @@ Reset:
 Init:
 	
 	UARTINIT BAUDRATE			; настройка UART 9600, 8, 1, None
-;	TWIINIT						; настройка TWI, 400kHz
+	TWIINIT						; настройка TWI, 400kHz
 ; =============== Write Intro to UART =================================
 	UARTWriteStrZ buildtime
 	UARTWriteStrZ header
 	UARTWriteStrZ author
 ; =============== Super Loop ==========================================
+    ldi tmp0, 0xFF
+    rcall LCD_Clear
 Loop:
 	rcall Read1WireData
 	rcall Delay_18ms
