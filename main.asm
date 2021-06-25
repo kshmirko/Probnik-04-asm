@@ -23,6 +23,9 @@ Init:
 	UARTWriteStrZ header
 	UARTWriteStrZ author
 ; =============== Super Loop ==========================================
+
+    SETMEM CByte, COMMAND
+    rcall LCD_Init
     ldi tmp0, 0x55
     rcall LCD_Clear
 Loop:
