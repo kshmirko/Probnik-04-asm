@@ -24,7 +24,23 @@
 
 .equ    SSD1306_DISPLAYOFF      =   0xAE
 .equ    SSD1306_DISPLAYON       =   0xAF
+.equ    SSD1306_SETDISPLAYCLOCKDIV= 0xD5
+.equ    SSD1306_SETMULTIPLEX    =   0xA8
+.equ    SSD1306_SETDISPLAYOFFSET=   0xD3
+.equ    SSD1306_SETSTARTLINE    =   0x40
+.equ    SSD1306_CHARGEPUMP      =   0x8D
+.equ    SSD1306_MEMORYMODE      =   0x20
+.equ    SSD1306_SEGREMAP        =   0xA0
+.equ    SSD1306_COMSCANDEC      =   0xC8
+.equ    SSD1306_SETCOMPINS      =   0xDA
+.equ    SSD1306_SETCONTRAST     =   0x81
+.equ    SSD1306_SETPRECHARGE    =   0xD9
+.equ    SSD1306_SETVCOMDETECT   =   0xDB
+.equ    SSD1306_DISPLAYALLOW_RESUME =   0xA4
+.equ    SSD1306_NORMALDISPLAY   =   0xA6
+.equ    SSD1306_INVERTDISPLAY   =   0xA7
 
+ret
 .equ    COMMAND                 =   0x00
 .equ    DATA                    =   0x40
 
@@ -147,8 +163,6 @@ LCD_Clear:
     rcall i2c_send
     ldi tmp0, DATA
     rcall i2c_send
-    
-
     pop tmp0
     ;ldi tmp0, 0x00
     ldi tmp3, 8
@@ -162,5 +176,151 @@ s1: rcall i2c_send
     rcall i2c_stop
     ret
 
-LCD_Char:
+LCD_Init:
+    clr tmp0
+    rcall LCD_Sleep
+
+    rcall Delay_10ms
+    
+    SETMEM CByte, COMMAND
+    SETMEM DByte, SSD1306_SETDISPLAYCLOCKDIV
+    rcall LCD_Command
+
+    SETMEM DByte, 0x89
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_SETMULTIPLEX
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_SETDISPLAYOFFSET
+    rcall LCD_Command
+
+    SETMEM DByte, 0x00
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_SETSTARTLINE | 0x00
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_CHARGEPUMP
+    rcall LCD_Command
+
+    SETMEM DByte, 0x14
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_MEMORYMODE
+    rcall LCD_Command
+    
+    SETMEM DByte, 0x00
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_SEGREMAP | 0x01
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_COMSCANDEC
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_SETCOMPINS
+    rcall LCD_Command
+
+    SETMEM DByte, 0x12
+    rcall LCD_Command
+    
+    SETMEM DByte, SSD1306_SETCONTRAST
+    rcall LCD_command
+
+    SETMEM DByte, 0xCF
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_SETPRECHARGE
+    rcall LCD_Command
+
+    SETMEM DByte, 0xF1
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_SETVCOMDETECT
+    rcall LCD_Command
+
+    SETMEM DByte, 0x40
+    rcall LCD_Command
+
+    SETMEM DByte, SSD1306_DISPLAYALLOW_RESUME
+    rcall LCD_Command
+    
+    clr tmp0
+    rcall LCD_Mode
+    
+    ldi tmp0, 0x01
+    rcall LCD_Sleep
+
+    clr tmp0
+    rcall LCD_Clear
+    
+    clr tmp0
+    clr tmp1
+    rcall LCD_Goto
+
+    ret
+
+
+LCD_Mode:
+; tmp0 
+; tmp1
+
+    push tmp1
+    SETMEM CByte, COMMAND
+    SETMEM DByte, SSD1306_NORMALDISPLAY
+
+    cpi tmp0, TRUE
+    brne send1
+
+    SETMEM DByte, SSD1306_INVERTDISPLAY
+
+send1:
+    rcall LCD_Command
+    pop tmp1
+
+    ret
+
+LCD_Goto:
+;tmp0, tmp1
+    sts LCD_X, tmp0
+    sts LCD_Y, tmp1
+
+    ldi tmp2, 0xB0
+    add tmp1, tmp2
+    sts DByte, tmp1
+    rcall LCD_Command
+
+
+    andi tmp0, 0xF
+    sts DByte, tmp0
+    rcall LCD_Command
+
+    ldi tmp0, LCD_X
+
+    lsr tmp0
+    lsr tmp0
+    lsr tmp0
+    lsr tmp0
+    ori tmp0, 0x10
+
+    sts DByte, tmp0
+    rcall LCD_Command
+
+    ret
+
+Delay_10ms:
+; Assembly code auto-generated
+; by utility from Bret Mulvey
+; Delay 159 993 cycles
+; 9ms 999us 562 1/2 ns
+; at 16 MHz
+
+    ldi  r20, 208
+    ldi  r21, 200
+K1: dec  r21
+    brne K1
+    dec  r20
+    brne K1
+
     ret

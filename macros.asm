@@ -51,4 +51,11 @@
 	ldi ZH, High(2*@0)
 	rcall UART_Send_StringZ
 .endm
-	
+
+.macro SETMEM
+    push r16
+    ldi r16, @1
+    sts @0, r16
+    pop r16
+.endm
+
