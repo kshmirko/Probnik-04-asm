@@ -26,7 +26,7 @@ Init:
 
     SETMEM CByte, COMMAND
     rcall LCD_Init
-    ldi tmp0, 0x55
+    ldi tmp0, 170
     rcall LCD_Clear
 Loop:
 	rcall Read1WireData
