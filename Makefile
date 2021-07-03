@@ -17,3 +17,4 @@ clean:
 		rm -f $(FILE).cof $(FILE).eep.hex $(FILE).hex $(FILE).obj *~
 size:
 		avr-size  $(FILE).hex
+

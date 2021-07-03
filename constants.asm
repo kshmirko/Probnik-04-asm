@@ -1,6 +1,6 @@
 .equ	XTAL				=	16000000
-.equ	BAUDRATE			=	9600
-.equ	DHT_SIZE			=	5
+.equ	BAUDRATE		=	9600
+.equ	DHT_SIZE		=	5
 .equ	BITS				=	8
 
 .def	tmp0				=	R16
@@ -10,3 +10,4 @@
 .def	tmp4				=	R20
 .def	tmp5				=	R21
 .def	tmp6				=	R22
+ 

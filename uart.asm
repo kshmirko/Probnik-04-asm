@@ -35,7 +35,7 @@ UART_Receive_Byte:
 ; ldi ZH, High(2*string_in_flash)
 ; rcall UART_Send_StringZ
 ; ====================================================================	
-UART_Send_StringZ:
+UART_Send_StringPZ:
 l_0:
 	lpm r16, Z+
 	cpi r16,0

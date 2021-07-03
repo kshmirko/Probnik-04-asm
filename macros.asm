@@ -1,6 +1,4 @@
-;.macro outi
-;.message "no parameters specified"
-;.endm
+; различные макросы на все случаи жизни
 
 .macro outi
 	ldi r16, @1
@@ -13,11 +11,6 @@
 
 .endm
 
-
-;.macro UARTINIT
-;.message "no parameters specified"
-;.endm
-
 .macro UARTINIT
 	.set BDIV = XTAL/(16*@0)-1
 	outi UBRRH, High(BDIV)
@@ -29,30 +22,23 @@
 .endm
 
 .macro TWIINIT
-	outi TWBR, 72
+	outi TWBR, 0x48
 	outi TWSR, (0<<TWPS1)|(0<<TWPS0)
 .endm
-
-;.macro UARTWriteByte
-;.message "no parameters specified"
-;.endm
 
 .macro UARTWriteByte
 	ldi r16, @0
 	rcall UART_Send_Byte
 .endm
 
-;.macro UARTWriteStrZ
-;.message "no parameters specified"
-;.endm
-
-.macro UARTWriteStrZ
+; Send to output UART variable from program memory
+.macro UARTWriteStrPZ ;var
 	ldi ZL, low(2*@0)
 	ldi ZH, High(2*@0)
-	rcall UART_Send_StringZ
+	rcall UART_Send_StringPZ
 .endm
 
-.macro SETMEM
+.macro SETMEM ;var, const
     push r16
     ldi r16, @1
     sts @0, r16
