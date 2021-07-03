@@ -27,7 +27,7 @@ Init:
     UARTWriteStrPZ author
 ; =============== Super Loop ==========================================
 
-    ;rcall LCDInit
+    rcall LCDInit
 Loop:
     rcall Read1WireData
     rcall Delay_18ms
