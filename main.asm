@@ -28,6 +28,7 @@ Init:
 ; =============== Super Loop ==========================================
 
     rcall LCDInit
+    LCD_Clear $FF
 Loop:
     rcall Read1WireData
     rcall Delay_18ms
