@@ -1,7 +1,9 @@
 .equ	XTAL				=	16000000
-.equ	BAUDRATE		=	9600
-.equ	DHT_SIZE		=	5
+.equ	BAUDRATE		    =	9600
+.equ	DHT_SIZE	    	=	5
 .equ	BITS				=	8
+.equ    ASTART              =   $20 ;- код символа пробел
+.equ    FONT_W              =   5
 
 .def	tmp0				=	R16
 .def	tmp1				=	R17

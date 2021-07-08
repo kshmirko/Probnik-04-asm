@@ -14,9 +14,9 @@
 ;	6. LCD_Sleep
 ;
 ; =====================================================================
-; Address of SSD1306 is 0x3c
+; Address of SSD1306 is $3c
 ; SLA_W is ADDRESS of SSD1306 shifted left by 1 bit
-; SLA_R is address of SSD1306 shifted left by 1 bit and or-ed with 0x01
+; SLA_R is address of SSD1306 shifted left by 1 bit and or-ed with $01
 .equ    SSD1306_ADDR            =   $3c
 .equ    SLA_W                   =   SSD1306_ADDR << 1
 .equ    SLA_R                   =   (SSD1306_ADDR << 1)|$01   
@@ -52,7 +52,7 @@
 
 ; ================= LCD_Command =============================================
 _LCD_Command: 
-;   Отрправка команды по TWI
+;   Отрправка команды в LCD по TWI
 ;   tmp0    - рабочий регистр
 ;   tmp1    - содержит ControlByte
 ;   tmp2    - содержит DataByte
@@ -79,19 +79,26 @@ _LCD_Command:
 
 _LCD_Clear:
 ;   tmp0 - clear pattern
-;   tmp0 = 0x00 - empty (black) screen
-;   tmp0 = 0xFF - filled (white) screen
+;   tmp0 = $00 - empty (black) screen
+;   tmp0 = $FF - filled (white) screen
+;   так как подпрограммы работы с TWI активно используют регистр tmp0
+;   сохрпняем его в стекеTWCR
     push tmp0
     rcall i2c_start
     ldi tmp0, SLA_W
     rcall i2c_send
     ldi tmp0, DATA
     rcall i2c_send
+
+;   и вытаскиваем его оттуда, когда потребуется
     pop tmp0
 
     ldi tmp3, 8
-s0: ldi tmp4, 128
-s1: rcall i2c_send
+s0: 
+    ldi tmp4, 128
+s1: 
+;   забиваем паттерном tmp0 всю видеопамять SSD1306
+    rcall i2c_send
     dec tmp4
     brne s1
     dec tmp3
@@ -101,33 +108,53 @@ s1: rcall i2c_send
     ret
 
 
-;LCD_Init:
-; Инициализация LCD    
-;    LCD_Command COMMAND, SSD1306_DISPLAYOFF
-;    LCD_Command COMMAND, SSD1306_SETDISPLAYCLOCKDIV
-;    LCD_Command COMMAND, $80
-;    LCD_Command COMMAND, SSD1306_SETMULTIPLEX
-;    LCD_Command COMMAND, $3F
-;    LCD_Command COMMAND, SSD1306_SETDISPLAYOFFSET
-;    LCD_Command COMMAND, $00
-;    LCD_Command COMMAND, SSD1306_SETSTARTLINE | $00
-;    LCD_Command COMMAND, SSD1306_CHARGEPUMP
-;    LCD_Command COMMAND, $14
-;    LCD_Command COMMAND, SSD1306_MEMORYMODE   
-;    LCD_Command COMMAND, $00
-;    LCD_Command COMMAND, SSD1306_SEGREMAP | $01
-;    LCD_Command COMMAND, SSD1306_COMSCANDEC
-;    LCD_Command COMMAND, SSD1306_SETCOMPINS
-;    LCD_Command COMMAND, $12
-;    LCD_Command COMMAND, SSD1306_SETCONTRAST
-;    LCD_Command COMMAND, $CF
-;    LCD_Command COMMAND, SSD1306_SETPRECHARGE
-;    LCD_Command COMMAND, $F1
-;    LCD_Command COMMAND, SSD1306_SETVCOMDETECT
-;    LCD_Command COMMAND, $40
-;    LCD_Command COMMAND, SSD1306_DISPLAYALLOW_RESUME 
-;    LCD_Command COMMAND, SSD1306_DISPLAYON
-;    ret
+_LCD_PutChar:
+;   выводит символ на экран
+;   регистр tmp1 содержит символ для вывода на экран
+;   подпрограмма ищет в таблице символов номер знака,
+;   далее, копирует байты символа в память экрана
+;   использует и модифицирует регистры X, tmp0, tmp1, r0, r1, tmp2
+    
+    subi tmp1, ASTART
+
+;   найдем теперь номер байта начаа картинки символа, для этого умножим tmp1
+;   на ширину символа FONT_W
+    ldi tmp2, FONT_W
+    mul tmp1, tmp2
+
+;   регистровая пара r1:r0 содержит результат перемножения
+;   загрузим в регистр X адрес начала таблицы
+
+    ldi ZL, low(symtbl)
+    ldi ZH, high(symtbl)
+
+;   добавим смещение в байтах с учетом возможного переноса разряда
+    add ZL, r0
+    adc ZH, r1
+
+;   теперь X указывает на начало изображения символа
+    rcall i2c_start
+    ldi tmp0, SLA_W
+    rcall i2c_send
+    ldi tmp0, DATA
+    rcall i2c_send
+    
+    ldi tmp1, FONT_W
+
+_loop_put_char:
+    lpm tmp0, Z+
+    rcall i2c_send
+
+    dec tmp1
+    brne _loop_put_char
+    
+;   insert 1 pixel separator line
+    clr tmp0
+    rcall i2c_send
+    ret
+    
+
+
 
 LCDInit:
     LCD_Command COMMAND, SSD1306_DISPLAYOFF
@@ -175,4 +202,15 @@ K1: dec  r21
    
 
 .endif
+
+
+;--A---  0
+;-A-A--  1
+;A---A-  2
+;A---A-  3
+;A---A-  4
+;AAAAA-  5
+;A---A-  6
+;A---A-  7
+;$FC,$22,$1,$22,$FC,$0
 

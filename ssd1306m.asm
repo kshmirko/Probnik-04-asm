@@ -15,6 +15,12 @@
 	;pop tmp1
 .endm
 
+.macro LCD_PutChar
+    .set char=@0
+    ldi tmp1, char
+    rcall _LCD_PutChar
+.endmacro
+
 
 .macro LCD_Sleep
 ; tmp0 - register contains set patameter
@@ -31,9 +37,9 @@
 .macro LCD_Goto
     .set x=@0
     .set y=@1
-    LCD_Command COMMAND, 0xB0 | y
-    LCD_Command COMMAND, x & 0xf
-    LCD_Command COMMAND, 0x10 | (x >> 4)
+    LCD_Command COMMAND, $B0 | y
+    LCD_Command COMMAND, x & $f
+    LCD_Command COMMAND, $10 | (x >> 4)
     SETMEM LCD_X, x
     SETMEM LCD_y, y
 .endm
@@ -53,7 +59,7 @@
         LCD_Command COMMAND, SSD1306_NORMALDISPLAY
     .endif
 
-    .if mode = 0x01
+    .if mode = $01
         LCD_Command COMMAND, SSD1306_INVERTDISPLAY
     .endif
 .endm

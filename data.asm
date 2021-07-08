@@ -1,8 +1,8 @@
-.cseg
-.org		(FLASHEND-100)
-buildtime:	.db "Release date %DAY%.%MONTH%.%YEAR% %HOUR%:%MINUTE%",10,13,0
-header:		.db "This program is Probnik-04 firmware",10,13, 0
-author:		.db "Ph.D. Shmirko K.A. ",10,13,0
+;.cseg
+;.org		(FLASHEND-100)
+;buildtime:	.db "Release date %DAY%.%MONTH%.%YEAR% %HOUR%:%MINUTE%",10,13,0
+;header:		.db "This program is Probnik-04 firmware",10,13, 0
+;author:		.db "Ph.D. Shmirko K.A. ",10,13,0
 
 
 .dseg
@@ -18,7 +18,5 @@ LCD_X:          .byte   1
 LCD_Y:          .byte   1
 
 
-CByte:          .Byte   1   ; ControlByte for I2C SSD1306 Communications
-DByte:          .Byte   1   ; DataByte for I2C SSD1306 Communications
 
 .eseg
