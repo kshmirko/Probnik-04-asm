@@ -28,7 +28,7 @@ Init:
 ; =============== Super Loop ==========================================
 
     rcall LCDInit
-    LCD_Clear $FF
+    LCD_Clear $00
     LCD_Goto 0, 0
     LCD_PutStrPZ buildtime
 Loop:
