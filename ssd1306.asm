@@ -171,8 +171,8 @@ _loop_put_char:
 _LCD_PutStringPZ:
 ; печатает строку из FLASH
 put_str_looppz:
-    lpm r16, Z+
-    cpi r16, 0
+    lpm r17, Z+
+    cpi r17, 0
 
     breq exit_put_strpz
 
