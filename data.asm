@@ -1,6 +1,6 @@
-;.cseg
-;.org		(FLASHEND-100)
-;buildtime:	.db "Release date %DAY%.%MONTH%.%YEAR% %HOUR%:%MINUTE%",10,13,0
+.cseg
+;.org		(FLASHEND-400)
+buildtime:	.db "Release date %DAY%.%MONTH%.%YEAR% %HOUR%:%MINUTE%",10,13,0
 ;header:		.db "This program is Probnik-04 firmware",10,13, 0
 ;author:		.db "Ph.D. Shmirko K.A. ",10,13,0
 
@@ -17,6 +17,5 @@ DATUM:          .byte   1
 LCD_X:          .byte   1
 LCD_Y:          .byte   1
 
-
-
 .eseg
+

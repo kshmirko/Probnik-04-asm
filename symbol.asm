@@ -1,28 +1,3 @@
-;.equ	ACODE=$41
-;.equ	SYMBWIDTH=5
-;.cseg
-;	ldi ZL, low(symtbl)
-;	ldi ZH, high(symtbl)
-;	push ZL
-;	push ZH
-;	
-;	; idx = (ACODE-ch)*SYMBWIDTH
-;	ldi r17, 'D'
-;	subi r17, ACODE
-;	ldi r16, SYMBWIDTH
-;	mul r16, r17
-;	add ZL, r0
-;	adc ZH, r1
-;	
-;	ldi r17, 5
-;display:	
-;	lpm r16, Z+
-;	dec r17
-;	brne display
-;	
-;	pop ZH
-;	pop ZL
-
 .cseg	
 ; Таблица символов шрифт 5х8
 ; Символы пробел, !, ", #, $, %, &, ', (, ), *, +, запятая, -, ., /, 

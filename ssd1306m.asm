@@ -21,6 +21,20 @@
     rcall _LCD_PutChar
 .endmacro
 
+.macro LCD_PutStrZ
+    ldi XL, low(@0)
+    ldi XH, high(@0)
+    rcall _LCD_PutStringZ
+.endmacro
+
+
+.macro LCD_PutStrPZ
+
+    ldi ZL, low(2*@0)
+    ldi ZH, high(2*@0)
+
+    rcall _LCD_PutStringPZ
+.endmacro
 
 .macro LCD_Sleep
 ; tmp0 - register contains set patameter

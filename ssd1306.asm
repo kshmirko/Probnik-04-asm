@@ -113,8 +113,8 @@ _LCD_PutChar:
 ;   регистр tmp1 содержит символ для вывода на экран
 ;   подпрограмма ищет в таблице символов номер знака,
 ;   далее, копирует байты символа в память экрана
-;   использует и модифицирует регистры X, tmp0, tmp1, r0, r1, tmp2
-    
+;   использует и модифицирует регистры X, tmp0, tmp1, r0, r1, tmp2    
+
     subi tmp1, ASTART
 
 ;   найдем теперь номер байта начаа картинки символа, для этого умножим tmp1
@@ -122,8 +122,15 @@ _LCD_PutChar:
     ldi tmp2, FONT_W
     mul tmp1, tmp2
 
+;сохраняем регистры
+    push ZL
+    push ZH 
+
 ;   регистровая пара r1:r0 содержит результат перемножения
-;   загрузим в регистр X адрес начала таблицы
+;   загрузим в регистр Z адрес начала таблицы
+
+
+
 
     ldi ZL, low(symtbl)
     ldi ZH, high(symtbl)
@@ -132,7 +139,7 @@ _LCD_PutChar:
     add ZL, r0
     adc ZH, r1
 
-;   теперь X указывает на начало изображения символа
+;   теперь Z указывает на начало изображения символа
     rcall i2c_start
     ldi tmp0, SLA_W
     rcall i2c_send
@@ -148,12 +155,49 @@ _loop_put_char:
     dec tmp1
     brne _loop_put_char
     
+
 ;   insert 1 pixel separator line
     clr tmp0
     rcall i2c_send
+
+; восстанавливаем регистры
+    pop ZH
+    pop ZL
+
     ret
     
 
+_LCD_PutStringPZ:
+; печатает строку из FLASH
+put_str_looppz:
+    lpm r16, Z+
+    cpi r16, 0
+
+    breq exit_put_strpz
+
+    rcall _LCD_PutChar
+
+    rjmp put_str_looppz
+
+exit_put_strpz:
+    ret
+
+_LCD_PutStringZ:
+; печатает строку из SRAM
+; строка должна заканчиваться символом с кодом 0.
+; строка помещается в регистр X.
+put_str_loop:
+    ld r16, X+
+    cpi r16, 0
+
+    breq exit_put_str
+    
+    rcall _LCD_PutChar
+    
+    rjmp put_str_loop
+
+exit_put_str:
+    ret
 
 
 LCDInit:

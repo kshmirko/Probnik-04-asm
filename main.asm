@@ -30,7 +30,7 @@ Init:
     rcall LCDInit
     LCD_Clear $FF
     LCD_Goto 0, 0
-    LCD_PutChar 'Q'
+    LCD_PutStrPZ buildtime
 Loop:
     rcall Read1WireData
     rcall Delay_18ms
