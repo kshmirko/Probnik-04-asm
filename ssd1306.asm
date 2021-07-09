@@ -160,6 +160,7 @@ _loop_put_char:
     clr tmp0
     rcall i2c_send
 
+    rcall i2c_stop
 ; восстанавливаем регистры
     pop ZH
     pop ZL
