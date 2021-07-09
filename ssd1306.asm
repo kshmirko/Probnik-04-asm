@@ -132,8 +132,8 @@ _LCD_PutChar:
 
 
 
-    ldi ZL, low(symtbl)
-    ldi ZH, high(symtbl)
+    ldi ZL, low(2*symtbl)
+    ldi ZH, high(2*symtbl)
 
 ;   добавим смещение в байтах с учетом возможного переноса разряда
     add ZL, r0
