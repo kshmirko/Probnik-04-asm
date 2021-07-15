@@ -34,7 +34,7 @@ Init:
 Loop:
     rcall Read1WireData
     rcall Delay_18ms
-    rcall BME280_ReadID
+    ;rcall BME280_ReadID
     rcall Delay_18ms
     rjmp Loop
 
