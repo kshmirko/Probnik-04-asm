@@ -17,6 +17,7 @@ BME280_ReadID:
     ldi tmp0, BME280_R
     rcall i2c_send
     rcall i2c_receive_last
+    rcall i2c_stop
     sts BME280_Data, r16
     ret
     
