@@ -17,5 +17,7 @@ DATUM:          .byte   1
 LCD_X:          .byte   1
 LCD_Y:          .byte   1
 
+BME280_Data:    .byte   1
+
 .eseg
 

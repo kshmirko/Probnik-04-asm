@@ -30,11 +30,11 @@ Init:
     rcall LCDInit
     LCD_Clear $00
     LCD_Goto 0, 0
-    ;LCD_PutChar 'Q'
-    ;LCD_PutChar 'R'
     LCD_PutStrPZ buildtime
 Loop:
     rcall Read1WireData
+    rcall Delay_18ms
+    rcall BME280_ReadID
     rcall Delay_18ms
     rjmp Loop
 
@@ -43,5 +43,6 @@ Loop:
 .include "twi.asm"      ; и TWI	
 .include "ssd1306.asm"  ; SSD1306 128x64 driver
 .include "dht11_22.asm" ; подключение подпрограмм для работы с dht11/dht22
+.include "bme280.asm"   ; подключение BME280
 .include "symbol.asm"
 .include "data.asm"     ; опредеделине глобальных переменных

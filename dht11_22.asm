@@ -168,7 +168,7 @@ Delay_18ms:
 	push r18
 	push r19
 	push r20
-	
+
     ldi  r18, 2
     ldi  r19, 118
     ldi  r20, 254
@@ -179,7 +179,7 @@ L1: dec  r20
     dec  r18
     brne L1
     nop
-    
+
     pop r20
     pop r19
     pop r18
@@ -195,7 +195,7 @@ Delay_54us:
 ; 7+8cycles  overhead
 	push r18
 	push r19
-	
+ 	
     ldi  r18, 2
     ldi  r19, 25
 L2: dec  r19
