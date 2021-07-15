@@ -28,9 +28,9 @@ Init:
 ; =============== Super Loop ==========================================
 
     rcall LCDInit
-    LCD_Clear $00
-    LCD_Goto 0, 0
-    LCD_PutStrPZ buildtime
+;    LCD_Clear $00
+;    LCD_Goto 0, 0
+;    LCD_PutStrPZ buildtime
 Loop:
     rcall Read1WireData
     rcall Delay_18ms
