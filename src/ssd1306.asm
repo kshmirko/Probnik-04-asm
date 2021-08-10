@@ -62,15 +62,15 @@ _LCD_Command:
 
     ; Отправка SLA_W
     ldi tmp0, SLA_W
-    rcall i2c_send
+    rcall i2c_send_byte
 
     ; Отправка ControlByte
     mov tmp0, tmp1
-    rcall i2c_send
+    rcall i2c_send_byte
 
     ; Отправка DataByte
     mov tmp0, tmp2
-    rcall i2c_send
+    rcall i2c_send_byte
 
     ; Отправка STOP
     rcall i2c_stop
@@ -86,9 +86,9 @@ _LCD_Clear:
     push tmp0
     rcall i2c_start
     ldi tmp0, SLA_W
-    rcall i2c_send
+    rcall i2c_send_byte
     ldi tmp0, DATA
-    rcall i2c_send
+    rcall i2c_send_byte
 
 ;   и вытаскиваем его оттуда, когда потребуется
     pop tmp0
@@ -98,7 +98,7 @@ s0:
     ldi tmp4, 128
 s1: 
 ;   забиваем паттерном tmp0 всю видеопамять SSD1306
-    rcall i2c_send
+    rcall i2c_send_byte
     dec tmp4
     brne s1
     dec tmp3
@@ -114,26 +114,22 @@ _LCD_PutChar:
 ;   подпрограмма ищет в таблице символов номер знака,
 ;   далее, копирует байты символа в память экрана
 ;   использует и модифицирует регистры X, tmp0, tmp1, r0, r1, tmp2    
-
+;   tmp0 - регистр для отправки данных по i2c
+;   tmp1 - временный регистр содержит выводимый символ, а также 
+;          используется как индекс в цикле
+;   tmp2 - хранит ширину символа (FONT_W)
+;   XL, XH - адрес таблицы символов в памяти FLASH  
+;   ZH, ZL - зарезервировано, не должно изменяться по завершению подпрограммы
     subi tmp1, ASTART
 
-;   найдем теперь номер байта начаа картинки символа, для этого умножим tmp1
-;   на ширину символа FONT_W
+;   найдем теперь номер байта начала картинки символа, для этого умножим tmp1
+;   на ширину символа FONT_W с использованием промежуточного регистра tmp2
     ldi tmp2, FONT_W
     mul tmp1, tmp2
 
-;сохраняем регистры
-    push ZL
-    push ZH 
-
-;   регистровая пара r1:r0 содержит результат перемножения
-;   загрузим в регистр Z адрес начала таблицы
-
-
-
-
-    ldi ZL, low(2*symtbl)
-    ldi ZH, high(2*symtbl)
+;   сохраняем адрес таблицы в стеке
+    mov ZL, XL
+    mov ZH, XH 
 
 ;   добавим смещение в байтах с учетом возможного переноса разряда
     add ZL, r0
@@ -142,15 +138,15 @@ _LCD_PutChar:
 ;   теперь Z указывает на начало изображения символа
     rcall i2c_start
     ldi tmp0, SLA_W
-    rcall i2c_send
+    rcall i2c_send_byte
     ldi tmp0, DATA
-    rcall i2c_send
+    rcall i2c_send_byte
     
     ldi tmp1, FONT_W
 
 _loop_put_char:
     lpm tmp0, Z+
-    rcall i2c_send
+    rcall i2c_send_byte
 
     dec tmp1
     brne _loop_put_char
@@ -158,20 +154,24 @@ _loop_put_char:
 
 ;   insert 1 pixel separator line
     clr tmp0
-    rcall i2c_send
+    rcall i2c_send_byte
 
     rcall i2c_stop
-; восстанавливаем регистры
-    pop ZH
-    pop ZL
 
     ret
     
 
 _LCD_PutStringPZ:
-; печатает строку из FLASH
+;   печатает строку из FLASH
+;   загружаем таблицу символов в регистр Z
+    ldi XL, low(2*symtbl)
+    ldi XH, high(2*symtbl)
 put_str_looppz:
+    lds ZH, str_addr+0
+    lds ZL, str_addr+1
     lpm r17, Z+
+    sts str_addr+0, ZH
+    sts str_addr+1, ZL
     cpi r17, 0
 
     breq exit_put_strpz

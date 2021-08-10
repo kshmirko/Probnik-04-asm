@@ -8,7 +8,56 @@
 .equ	DHT_DDR			=	DDRB
 .equ	DHT_PIN			=	PINB
 
-;
+
+dht_read_byte:
+    ;читаем 1 байт по шине 1-wire
+    ;используемые регистры
+    ; r16 - возвращаемые данные
+    ; r17 - dht_counter
+    ; r18 - переменная цикла
+    ; r19 - битовая маска получаемого бита
+    ; эти регистры модифицируются и не исправляются
+    eor r16, r16; dht_data = 0
+    eor r17, r17; dht_counter = 0
+
+    cbi DHT_DDR, DHT_BIT; DHT_DDR &= ~(1<<DHT_BIT)
+
+    ldi r19, 0x01
+    ldi r18, 7; i=7
+dht_l0:
+    eor r17, r17 ; dht_counter = 0
+
+dht_l1: ;while(!(DHT_PIN & (1<<DHT_BIT)) && (dht11_counter<10)){
+    sbic DHT_PIN, DHT_BIT
+    rjmp dht_l1_exit
+    cpi r17, 10
+    brge dht_l1_exit
+    rcall Delay_10us
+    inc r17
+    rjmp dht_l1
+dht_l1_exit:
+    eor r17, r17 ; dht_counter = 0
+
+dht_l2: ;while((DHT_PIN & (1<<DHT_BIT)) && (dht11_counter<15)){
+    sbis DHT_PIN, DHT_BIT
+    rjmp dht_l2_exit
+    cpi r17, 15
+    brge dht_l2_exit
+    rcall Delay_10us
+    inc r17
+    rjmp dht_l2
+dht_l2_exit:
+    cpi r17, 5
+    brlt dht_l3_exit
+    or r16, r19 
+dht_l3_exit:
+    lsl r19; r19<<1
+    dec r18
+    brne dht_l0
+    ret
+    
+    
+
 ; Read 40 bits from 1wire bus dht11/dht22
 ; used registers:
 ;	tmp0, tmp1, tmp2, tmp3, tmp4
@@ -156,6 +205,21 @@ Exit_DHT:
     ; разрешаем прерывания
     sei
 	ret
+
+
+Delay_10us:
+; Assembly code auto-generated
+; by utility from Bret Mulvey
+; Delay 149 cycles
+; 9us 312 1/2 ns
+; at 16 MHz
+; 7+4 cycles
+    push r18
+    ldi  r18, 49
+L6: dec  r18
+    brne L6
+    rjmp PC+1
+    pop r18
 
 
 Delay_18ms:

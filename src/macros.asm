@@ -2,7 +2,6 @@
 
 .macro outi
 	ldi r16, @1
-
 .if @0<$40
 	out @0, r16
 .else

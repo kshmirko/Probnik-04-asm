@@ -1,8 +1,6 @@
 .cseg
 ;.org		(FLASHEND-400)
 buildtime:	.db "RELEASE DATE %YEAR%%MONTH%%DAY%%HOUR%%MINUTE%",0
-;header:		.db "This program is Probnik-04 firmware",10,13, 0
-;author:		.db "Ph.D. Shmirko K.A. ",10,13,0
 
 
 .dseg
@@ -18,6 +16,8 @@ LCD_X:          .byte   1
 LCD_Y:          .byte   1
 
 BME280_Data:    .byte   1
-
+sym_table:      .byte   2
+str_addr:       .byte   2   ; address of string in FLASH (str_addr+0 - high, str_addr+1 - low)
+CCS811_DATA:    .byte   CCS811_BUFSIZE   ; space for CCS811 data
 .eseg
 
