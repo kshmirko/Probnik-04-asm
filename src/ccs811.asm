@@ -40,5 +40,11 @@
 
 .equ    CCS811_BUFSIZE      =   8
 
+
+;==================== Startup CCS811
+ccs811_startup:
+   i2c_read_buffer CCS811_ADDR,  HW_ID, CCS811_DATA, 1
+   ret
+
 .endif
 

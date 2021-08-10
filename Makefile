@@ -9,7 +9,7 @@ INCLUDEDIR=/usr/local/Cellar/avra/1.4.2/include/avr/
 FILE=main
 
 compile:
-		$(ASM) -I $(INCLUDEDIR) -l $(FILE).lst $(FILE).asm 2>&1|grep -v PRAGMA
+		$(ASM) -I $(INCLUDEDIR) -l $(FILE).lst -d $(FILE).dhex $(FILE).asm 2>&1|grep -v PRAGMA
 program: $(FILE).hex
 		$(ISP) -c usbasp -p $(MK)  -U flash:w:$(FILE).hex:i 
 		#-U lfuse:w:$(LFuse):m -U hfuse:w:$(HFuse):m

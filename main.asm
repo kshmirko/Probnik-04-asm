@@ -18,7 +18,7 @@ Reset:
 
 Init:
     UARTINIT BAUDRATE           ; настройка UART 9600, 8, 1, None
-    TWIINIT						; настройка TWI, 400kHz
+    TWIINIT						; настройка TWI, 100kHz
 
     
 ; =============== Write Intro to UART =================================
@@ -28,14 +28,9 @@ Init:
 ; =============== Super Loop ==========================================
 
     rcall LCDInit
-;    LCD_Clear $00
-;    LCD_Goto 0, 0
-;    LCD_PutStrPZ buildtime
 Loop:
     rcall Read1WireData
     rcall Delay_18ms
-    ;rcall BME280_ReadID
-    ;rcall Delay_18ms
     rjmp Loop
 
 ;================ End Program =========================================
@@ -44,6 +39,6 @@ Loop:
 .include "src/ssd1306.asm"  ; SSD1306 128x64 driver
 .include "src/dht11_22.asm" ; подключение подпрограмм для работы с dht11/dht22
 .include "src/bme280.asm"   ; подключение BME280
-.include "src/ccs811.asm"
-.include "src/symbol.asm"
-.include "src/data.asm"     ; опредеделине глобальных переменных
+.include "src/ccs811.asm"   ; CCs811 Driver
+.include "src/symbol.asm"   ; symbol table
+.include "src/data.asm"     ; global variables in SRAM
