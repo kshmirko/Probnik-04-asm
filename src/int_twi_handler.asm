@@ -1,3 +1,6 @@
+.ifndef __I2C_INT_HANDLER__
+.define __I2C_INT_HANDLER__
+
 .dseg
 ; TWI variables
 i2c_slave_addr: .byte   1           ; device address
@@ -17,6 +20,9 @@ i2c_buffer_addr_out: .byte 2        ; address of the buffer to send data
 
 TWI_HANDLER:
     PUSHF
+    push temp2
+    PUSHXYZ
+
     ldi ZH, high(twi_table)
     ldi ZL, low(twi_table)
 
@@ -33,11 +39,14 @@ TWI_HANDLER:
     icall
 
     ; restore temp register and SREG
+    POPXYZ
+    pop temp2
     POPF
     reti
 
 ;=============================================================================
 ; Table of redirection according to TWSR
+;=============================================================================
 twi_table:  
     rjmp twi_00; $00 = FAIL
     rjmp twi_08; $08 = START
@@ -53,6 +62,10 @@ twi_table:
     rjmp twi_58; $58 = RECV NACK
 
 
+;=============================================================================
+;I2C subroutines
+; twi_08, twi_10 - main entrance points
+;=============================================================================
 twi_00: ; FAIL
     ldi temp, I2C_ERR_BF
     sts i2c_err, temp
@@ -75,8 +88,7 @@ twi_10: ; Restart
     ret
 
 twi_18:
-    ldi ZH, high(i2c_buffer_addr_out)
-    ldi ZL, low(i2c_buffer_addr_out)
+    RAM_DATA_IN_Z i2c_buffer_addr_out
     lds temp, i2c_index_data
     ADZR temp
     ld temp2, Z
@@ -162,4 +174,6 @@ twi_58:
     OUTI TWCR, 0<<TWSTA|1<<TWSTO|1<<TWINT|0<<TWEA|1<<TWEN|1<<TWIE
     sts i2c_busy, r0
     ret
+
+.endif
 

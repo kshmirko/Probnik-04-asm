@@ -236,21 +236,21 @@ LRF_%:
 .endmacro
 
 ; increment 2 byte variable in memory
-; @0    - high byte
-; @0+1  - lower byte
+; @0+1  - high byte
+; @0    - lower byte
 .macro INC16M
-    lds temp, @0+1
-    subi temp, (-1)
-    sts @0+1, temp
-
     lds temp, @0
-    sbci temp, (-1)
+    subi temp, (-1)
     sts @0, temp
+
+    lds temp, @0+1
+    sbci temp, (-1)
+    sts @0+1, temp
 .endmacro
 
 .macro ADZR
     add ZL, @0
-    sbci ZH, 0
+    adc ZH, r0
 .endmacro
 
 .macro RAM_DATA_IN_Z
@@ -258,4 +258,56 @@ LRF_%:
     lds ZH, @0+1
 .endmacro
 
+.macro PUSHXYZ
+    push XH
+    push XL
+    push YH
+    push YL
+    push ZH
+    push ZL
+.endmacro
 
+.macro POPXYZ
+    pop ZL
+    pop ZH
+    pop YL
+    pop YH
+    pop XL
+    pop XH
+.endmacro
+
+;=============================================================================
+; Macroses to use with I2C
+;=============================================================================
+
+.macro TWI_WRITE_ASYNC
+; @0 - address
+; @1 - variable
+; @2 - num bytes to write
+    OUTI i2c_busy, 1
+    OUTI i2c_slave_addr, @0
+    OUTI do_i2c, I2C_SAWP 
+    OUTI i2c_buffer_addr_out+0, low(@1)
+    OUTI i2c_buffer_addr_out+1, high(@1)
+    OUTI i2c_index_data+0, 0
+    OUTI i2c_index_data_size, @2
+
+    OUTI TWCR, 1<<TWSTA|0<<TWSTO|1<<TWINT|0<<TWEA|1<<TWEN|1<<TWIE
+.endmacro
+
+
+.macro TWI_READ_ASYNC
+; @0 - address
+; @1 - variable
+; @2 - num bytes to write
+
+    OUTI i2c_busy, 1
+    OUTI i2c_slave_addr, @0
+    OUTI do_i2c, I2C_SARP 
+    OUTI i2c_buffer_addr_in+0, low(@1)
+    OUTI i2c_buffer_addr_in+1, high(@1)
+    OUTI i2c_index_data+0, 0
+    OUTI i2c_index_data_size, @2
+
+    OUTI TWCR, 1<<TWSTA|0<<TWSTO|1<<TWINT|0<<TWEA|1<<TWEN|1<<TWIE
+.endmacro
