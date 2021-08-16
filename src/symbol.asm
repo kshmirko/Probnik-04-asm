@@ -1,12 +1,10 @@
-.cseg	
-; Таблица символов шрифт 5х8
-; Символы пробел, !, ", #, $, %, &, ', (, ), *, +, запятая, -, ., /, 
-; 0-9, :, ;, <, =, >, ?, @
-; Заглавные буквы латиницы помещены в конец программы.
-; Поскольку данные размещаются в сегменте кода, их размер должен быть кратен 2
-; Это значит, что если переменная занимает нечетное число байтов, она 
-; дополняется нулем. Так что если компилятор выводит такое предупреждение, лучше
-; явно задать этот байт
+.cseg
+; Symbol table font 5x8
+; The symbols are: space, !, ", #, $, %, &, ', (, ), *, +, comma, -, ., /, 
+; 0-9, :, ;, <, =, >, ?, @ and Capital english letters.
+; As they are in program memory its address should be times of 2.
+; Because addressing element is word, even though you store a byte, it will take 2 bytes.
+; So continuous symbol table length should be times of 2.
 ;
 .org (FLASHEND-296)
 symtbl:	.db $00, $00, $00, $00, $00,\

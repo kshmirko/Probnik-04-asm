@@ -6,18 +6,18 @@
 ; отправка команды по twi в ssd1306
 ; LCD_Command <ControlByte> <DataByte>
 ; макрос прогружает стэк на 2 байта
-	;push tmp1
-	;push tmp2
-	ldi tmp1, @0
-	ldi tmp2, @1
+	;push temp1
+	;push temp2
+	ldi temp1, @0
+	ldi temp2, @1
 	rcall _LCD_Command
-	;pop tmp2
-	;pop tmp1
+	;pop temp2
+	;pop temp1
 .endm
 
 .macro LCD_PutChar
     .set char=@0
-    ldi tmp1, char
+    ldi temp1, char
     rcall _LCD_PutChar
 .endmacro
 
@@ -37,8 +37,8 @@
 .endmacro
 
 .macro LCD_Sleep
-; tmp0 - register contains set patameter
-; tmp1 - temporary register
+; temp - register contains set patameter
+; temp1 - temporary register
     .if @0=0
         LCD_Command COMMAND, SSD1306_DISPLAYOFF
     .endif
@@ -61,7 +61,7 @@
 
 .macro LCD_Clear
     .set pattern=@0
-    ldi tmp0, pattern
+    ldi temp, pattern
 
     rcall _LCD_Clear
 .endm

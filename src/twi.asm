@@ -14,7 +14,7 @@
 ;==================== Start command i2c 
 ; Uses R16 register
 i2c_start:
-    outi TWCR, (1<<TWINT)|(1<<TWSTA)|(1<<TWEN)
+    OUTI TWCR, (1<<TWINT)|(1<<TWSTA)|(1<<TWEN)
 	                                            ; Clear interrupt flag (1<<TWINT)
                                                 ; Set start condition (1<<TWSTA)
                                                 ; Enable TWI (1<<TWEN)
@@ -23,12 +23,12 @@ i2c_start:
 
 ;-------------------- Restart command on the twi line
 i2c_restart:
-    outi TWCR, (1<<TWINT)|(1<<TWSTA)|(1<<TWEN)
+    OUTI TWCR, (1<<TWINT)|(1<<TWSTA)|(1<<TWEN)
     ret
 
 ;==================== send stop condition
 i2c_stop:
-    outi TWCR, (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)
+    OUTI TWCR, (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)
     ; Clear interrupt flag (1<<TWINT)
     ; Set stop condition (1<<TWSTO)
     ; Enable TWI (1<<TWEN)
@@ -40,14 +40,14 @@ i2c_send_byte:
 ; A byte to send in R16
 ;
     out     TWDR,R16      ; Записываем передаваемый байт в регистр TWDR
-    outi    TWCR, (1<<TWINT)|(1<<TWEN)
+    OUTI    TWCR, (1<<TWINT)|(1<<TWEN)
     rcall   i2c_wait_interrupt      ; Ожидание окончания пересылки байта
     ret
  
 ;==================== Receive byte with ack
 i2c_receive_byte:
 ; Received byte in R16
-    outi    TWCR, (1<<TWINT)|(1<<TWEN)|(1<<TWEA)
+    OUTI    TWCR, (1<<TWINT)|(1<<TWEN)|(1<<TWEA)
     rcall   i2c_wait_interrupt  
     in      R16,TWDR    
     ret
@@ -55,7 +55,7 @@ i2c_receive_byte:
 ;==================== Receive byte with NACK (ie last byte) 
 i2c_receive_lastbyte:
 ; received byte in R16
-    outi    TWCR, (1<<TWEN)|(1<<TWINT)
+    OUTI    TWCR, (1<<TWEN)|(1<<TWINT)
     rcall   i2c_wait_interrupt      ; Ожидание окончания приёма байта
     in      R16,TWDR      ; Считываем полученную информацию из TWDR
     ret
@@ -113,7 +113,7 @@ i2c_rd_l0:
     ret
 ;===========================================================================
 
-.macro i2c_write_buffer; ADDR, MAILBOX, BUFF, SIZE
+.macro I2C_WRITE_BUFFER; ADDR, MAILBOX, BUFF, SIZE
     ldi R16, @0
     ldi R17, @1
     ldi YL, low(@2)
@@ -122,7 +122,7 @@ i2c_rd_l0:
     rcall i2c_write
 .endmacro
 
-.macro i2c_read_buffer; ADDR, MAILBOX, BUFF, SIZE
+.macro I2C_READ_BUFFER; ADDR, MAILBOX, BUFF, SIZE
     ldi R16, @0
     ldi R17, @1
     ldi YL, low(@2)

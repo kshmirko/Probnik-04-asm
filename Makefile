@@ -1,4 +1,4 @@
-MK=m32
+MK=m32a
 LFuse=
 HFuse=
 

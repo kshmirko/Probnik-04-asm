@@ -1,6 +1,7 @@
 ; различные макросы на все случаи жизни
 
-.macro outi
+.macro OUTI
+; send constant to a memory/port
 	ldi r16, @1
 .if @0<$40
 	out @0, r16
@@ -10,19 +11,149 @@
 
 .endmacro
 
-.macro UARTINIT
+.macro OUTR
+; out register to a memory/port
+    .if @0<$40
+        out @0, @1
+    .else
+        sts @0, @1
+    .endif
+.endmacro
+
+.macro INR
+; read value from port/memory into register
+    .if @1<$40
+        in @0, @1
+    .else
+        lds @0, @1
+    .endif
+.endmacro
+
+.macro SETB
+; set bit via register
+; temp is used and not restored at the end
+    .if @0<$20
+        sbi @0, @1
+    .elif @0<$40
+        in temp, @0
+        ori temp, (1<<@1)
+        out @0, temp
+    .else   
+        lds temp, @1
+        ori temp, (1<<@1)
+        sts @1, temp
+    .endif
+.endmacro
+
+.macro CLRB
+; clear bit via register
+; temp is used and not restored at the end
+    .if @0<$20
+        cbi @0, @1
+    .elif @0<$40
+        in temp, @0
+        andi temp, ~(1<<@1)
+        out @0, temp
+    .else   
+        lds temp, @1
+        andi temp, ~(1<<@1)
+        sts @1, temp
+    .endif
+.endmacro
+
+.macro INVB
+; invert bit via register
+; uses temp and temp1
+; these registers corrupted at the end if a macro
+.if @0<$40
+    in temp, @0
+    ldi temp1, @1
+    eor temp, temp1
+    out @0, temp
+.else
+    lds temp, @0
+    ldi temp1, @1
+    eor temp, temp1
+    sts @0, temp1
+.endif
+.endmacro
+
+;=============================================================================
+;==================== these macro help using BRTS, BRTC
+;=============================================================================
+.macro STOREB
+; store @1 bit of @0 in T flag of SREG
+.if @0<$20
+    in temp, @0
+    bst temp, @1
+.else
+    lds temp, @0
+    bst temp, @1
+.endif
+.endmacro
+
+.macro LOADB
+; store T flag of SREG in @1 bit of @0
+.if @0<$40
+    in temp, @0
+    bld temp, @1
+    out @0, temp
+.else
+    lds temp, @0
+    bld temp, @1
+    sts @0, temp
+.endif
+.endmacro
+;=============================================================================
+
+;=============================================================================
+; Initialize Stack Pointer to the end of RAM
+; Stack grows from the end of RAM towards beginning
+;=============================================================================
+.macro StackInit
+    OUTI SPL, LOW(@0)
+    OUTI SPH, HIGH(@0)
+.endmacro
+
+;=============================================================================
+; Working with UART 
+;=============================================================================
+.macro UARTINIT_Syncro; BAUD_RATE,'N',1
 	.set BDIV = XTAL/(16*@0)-1
-	outi UBRRH, High(BDIV)
-	outi UBRRL, Low(BDIV)
+	OUTI UBRRH, High(BDIV)
+	OUTI UBRRL, Low(BDIV)
 	
 	; Enable read and write UART
-	outi UCSRB, (1<<RXEN)|(1<<TXEN)						
-	outi UCSRC, (1<<URSEL)|(0<<UMSEL)|(0<<USBS)|(0<<UCSZ2)|(1<<UCSZ1)|(1<<UCSZ0)
+	OUTI UCSRB, (1<<RXEN)|(1<<TXEN)
+
+    .set UCSRC0 = 0
+
+    .if @1=='N'
+    .set UCSRC0 |= (0<<UPM1)|(0<<UPM0)
+    .endif
+    .if @1=='E'
+    .set UCSRC0 |= (1<<UPM1)|(0<<UPM0)
+    .endif
+    .if @1=='O'
+    .set UCSRC0 |= (1<<UPM1)|(1<<UPM0)
+    .endif
+
+    .if @2==2
+    .set UCSRC0 |= (1<<USBS)
+    .endif
+
+	OUTI UCSRC, UCSRC0|(1<<UCSZ1)|(1<<UCSZ0)
+
+    ; Init variables
+;    OUTI rx_wr_index, 0
+;    OUTI rx_rd_index, 0
+;    OUTI rx_counter, 0
+
 .endmacro
 
 .macro TWIINIT
-	outi TWBR, 0x48
-	outi TWSR, (0<<TWPS1)|(0<<TWPS0)
+	OUTI TWBR, 0x48
+	OUTI TWSR, (0<<TWPS1)|(0<<TWPS0)
 .endmacro
 
 .macro UARTWriteByte
@@ -37,10 +168,92 @@
 	rcall UART_Send_StringPZ
 .endmacro
 
-.macro SETMEM ;var, const
-    push r16
-    ldi r16, @1
-    sts @0, r16
-    pop r16
+
+;=============================================================================
+; push working register and SREG into stack
+;=============================================================================
+.macro PUSHF
+    push temp
+    in temp, SREG
+    push temp
+.endmacro
+
+.macro POPF
+    pop temp
+    out SREG, temp
+    pop temp
+.endmacro
+
+
+;=============================================================================
+;=============================================================================
+.macro RAMFLUSH
+;   Empty whole RAM
+;   Z register points to the beginning if the RAM,
+;   then sequentally clears each byte towards RAMEND
+    ldi ZL, low(SRAM_START)
+    ldi ZH, high(SRAM_START)
+    clr temp
+
+LRF_%:
+    st Z+, temp
+    cpi ZL, low(RAMEND)
+    brne LRF_%
+
+    cpi ZH, high(RAMEND+1)
+    brne LRF_%
+.endmacro
+
+.macro GPRFLUSH
+    ldi	ZL, 30	; +-----------------------------+
+	clr	ZH	    ; | Empty   registers (R00-R31) |
+	dec	ZL	    ; |                             |
+	st	Z, ZH	; | [всего 10 байт кода!]       |
+	brne PC-2   ; +-----------------------------+
 .endm
 
+;=============================================================================
+; Increment and decrement variables in memory
+;=============================================================================
+
+.macro INC8M
+    lds temp, @0
+    subi temp, (-1)
+    sts @0, temp
+.endmacro
+
+
+.macro DEC8M
+    lds temp, @0
+    subi temp, (1)
+    sts @0, temp
+.endmacro
+
+
+.macro CLR8M
+    clr temp
+    sts @0, temp
+.endmacro
+
+; increment 2 byte variable in memory
+; @0    - high byte
+; @0+1  - lower byte
+.macro INC16M
+    lds temp, @0+1
+    subi temp, (-1)
+    sts @0+1, temp
+
+    lds temp, @0
+    sbci temp, (-1)
+    sts @0, temp
+.endmacro
+
+.macro ADZR
+    add ZL, @0
+    sbci ZH, 0
+.endmacro
+
+.macro RAM_DATA_IN_Z
+    lds ZL, @0+0
+    lds ZH, @0+1
+.endmacro

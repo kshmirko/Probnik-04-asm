@@ -60,7 +60,7 @@ dht_l3_exit:
 
 ; Read 40 bits from 1wire bus dht11/dht22
 ; used registers:
-;	tmp0, tmp1, tmp2, tmp3, tmp4
+;	temp, temp1, temp2, temp3, temp4
 ; used variable:
 ;	DHT_RESPONSE[5]
 ;
@@ -121,20 +121,20 @@ A0: sbic DHT_PIN, DHT_BIT
 	ldi XL, low(DHT_RESPONSE)
 	ldi XH, High(DHT_RESPONSE)
 
-	clr tmp0
-	sts i_index, tmp0
+	clr temp
+	sts i_index, temp
 
 ; for tmp=0; tmp<5; tmp++    
 B0: 
 	;X[tmp] = 0
-	clr tmp1
-;	st X, tmp1
+	clr temp1
+;	st X, temp1
 	
-	ldi tmp3, 0x01
-	clr tmp4
-	; for tmp2=0; tmp2<8; tmp2++
-	clr tmp0
-	sts j_index, tmp0
+	ldi temp3, 0x01
+	clr temp4
+	; for temp2=0; temp2<8; temp2++
+	clr temp
+	sts j_index, temp
 B1: 
 	;while (!(DHT_PIN&(1<<DHT_BIT)));
 C0:	sbis DHT_PIN, DHT_BIT
@@ -145,61 +145,61 @@ C0:	sbis DHT_PIN, DHT_BIT
 	;if (DHT_PIN&(1<<DHT_BIT))
     ;        data[j]|=1<<(7-i);
 	sbic DHT_PIN, DHT_BIT
-	or tmp4, tmp3
-	lsl tmp3
+	or temp4, temp3
+	lsl temp3
 	
 	;while (DHT_PIN&(1<<DHT_BIT));
 C1: sbic DHT_PIN, DHT_BIT
 	rjmp C1
 
-    lds tmp0, j_index
-	inc tmp0
-	sts j_index, tmp0
-	cpi tmp0, BITS
+    lds temp, j_index
+	inc temp
+	sts j_index, temp
+	cpi temp, BITS
 	brne B1
 	
 ; Rotate bits in register
-	clr tmp5
-	ldi tmp6, BITS
-W0: rol tmp4
-	ror tmp5
-	dec tmp6
+	clr temp5
+	ldi temp6, BITS
+W0: rol temp4
+	ror temp5
+	dec temp6
 	brne W0
-	mov  tmp4,tmp5   
+	mov  temp4,temp5   
 
-;	DHT_RESPONSE[tmp++] = tmp4
-	st X+, tmp4
+;	DHT_RESPONSE[tmp++] = temp4
+	st X+, temp4
 ;	
-    lds tmp0, i_index
-	inc tmp0
-	sts i_index, tmp0
-	cpi tmp0, DHT_SIZE
+    lds temp, i_index
+	inc temp
+	sts i_index, temp
+	cpi temp, DHT_SIZE
 	brne B0
 
 
 ; Расчет CRC = (DHT[0]+DHT[1]+DHT[2]+DHT[3])&0xFF
-    clr tmp0
+    clr temp
     ldi XL, low(DHT_RESPONSE)
     ldi XH, High(DHT_RESPONSE)
-    ldi tmp2, DHT_SIZE-1
-; for tmp2=DHT_SIZE-1 to 0
-P0: ld tmp1, X+
-    add tmp0, tmp1
-    dec tmp2
+    ldi temp2, DHT_SIZE-1
+; for temp2=DHT_SIZE-1 to 0
+P0: ld temp1, X+
+    add temp, temp1
+    dec temp2
     brne P0
-    sts CRC, tmp0
+    sts CRC, temp
 
 ; проверка CRC
 ; DHT_OK = 1
-    ldi tmp1, 1
-    sts DHT_OK, tmp1
+    ldi temp1, 1
+    sts DHT_OK, temp1
 
-    lds tmp1, DHT_RESPONSE+4
-    cp tmp0, tmp1
+    lds temp1, DHT_RESPONSE+4
+    cp temp, temp1
     breq Exit_DHT
 ; if CRC!=DHT[4] DHT_OK=0
-    clr tmp1
-    sts DHT_OK, tmp1
+    clr temp1
+    sts DHT_OK, temp1
 
 Exit_DHT:
     ; разрешаем прерывания

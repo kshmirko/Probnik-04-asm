@@ -53,23 +53,23 @@
 ; ================= LCD_Command =============================================
 _LCD_Command: 
 ;   Отрправка команды в LCD по TWI
-;   tmp0    - рабочий регистр
-;   tmp1    - содержит ControlByte
-;   tmp2    - содержит DataByte
+;   temp    - рабочий регистр
+;   temp1    - содержит ControlByte
+;   temp2    - содержит DataByte
 
     ; Отправка сигнала START
     rcall i2c_start
 
     ; Отправка SLA_W
-    ldi tmp0, SLA_W
+    ldi temp, SLA_W
     rcall i2c_send_byte
 
     ; Отправка ControlByte
-    mov tmp0, tmp1
+    mov temp, temp1
     rcall i2c_send_byte
 
     ; Отправка DataByte
-    mov tmp0, tmp2
+    mov temp, temp2
     rcall i2c_send_byte
 
     ; Отправка STOP
@@ -78,30 +78,30 @@ _LCD_Command:
     ret
 
 _LCD_Clear:
-;   tmp0 - clear pattern
-;   tmp0 = $00 - empty (black) screen
-;   tmp0 = $FF - filled (white) screen
-;   так как подпрограммы работы с TWI активно используют регистр tmp0
+;   temp - clear pattern
+;   temp = $00 - empty (black) screen
+;   temp = $FF - filled (white) screen
+;   так как подпрограммы работы с TWI активно используют регистр temp
 ;   сохрпняем его в стекеTWCR
-    push tmp0
+    push temp
     rcall i2c_start
-    ldi tmp0, SLA_W
+    ldi temp, SLA_W
     rcall i2c_send_byte
-    ldi tmp0, DATA
+    ldi temp, DATA
     rcall i2c_send_byte
 
 ;   и вытаскиваем его оттуда, когда потребуется
-    pop tmp0
+    pop temp
 
-    ldi tmp3, 8
+    ldi temp3, 8
 s0: 
-    ldi tmp4, 128
+    ldi temp4, 128
 s1: 
-;   забиваем паттерном tmp0 всю видеопамять SSD1306
+;   забиваем паттерном temp всю видеопамять SSD1306
     rcall i2c_send_byte
-    dec tmp4
+    dec temp4
     brne s1
-    dec tmp3
+    dec temp3
     brne s0
 
     rcall i2c_stop
@@ -110,22 +110,22 @@ s1:
 
 _LCD_PutChar:
 ;   выводит символ на экран
-;   регистр tmp1 содержит символ для вывода на экран
+;   регистр temp1 содержит символ для вывода на экран
 ;   подпрограмма ищет в таблице символов номер знака,
 ;   далее, копирует байты символа в память экрана
-;   использует и модифицирует регистры X, tmp0, tmp1, r0, r1, tmp2    
-;   tmp0 - регистр для отправки данных по i2c
-;   tmp1 - временный регистр содержит выводимый символ, а также 
+;   использует и модифицирует регистры X, temp, temp1, r0, r1, temp2    
+;   temp - регистр для отправки данных по i2c
+;   temp1 - временный регистр содержит выводимый символ, а также 
 ;          используется как индекс в цикле
-;   tmp2 - хранит ширину символа (FONT_W)
+;   temp2 - хранит ширину символа (FONT_W)
 ;   XL, XH - адрес таблицы символов в памяти FLASH  
 ;   ZH, ZL - зарезервировано, не должно изменяться по завершению подпрограммы
-    subi tmp1, ASTART
+    subi temp1, ASTART
 
-;   найдем теперь номер байта начала картинки символа, для этого умножим tmp1
-;   на ширину символа FONT_W с использованием промежуточного регистра tmp2
-    ldi tmp2, FONT_W
-    mul tmp1, tmp2
+;   найдем теперь номер байта начала картинки символа, для этого умножим temp1
+;   на ширину символа FONT_W с использованием промежуточного регистра temp2
+    ldi temp2, FONT_W
+    mul temp1, temp2
 
 ;   сохраняем адрес таблицы в стеке
     mov ZL, XL
@@ -137,23 +137,23 @@ _LCD_PutChar:
 
 ;   теперь Z указывает на начало изображения символа
     rcall i2c_start
-    ldi tmp0, SLA_W
+    ldi temp, SLA_W
     rcall i2c_send_byte
-    ldi tmp0, DATA
+    ldi temp, DATA
     rcall i2c_send_byte
     
-    ldi tmp1, FONT_W
+    ldi temp1, FONT_W
 
 _loop_put_char:
-    lpm tmp0, Z+
+    lpm temp, Z+
     rcall i2c_send_byte
 
-    dec tmp1
+    dec temp1
     brne _loop_put_char
     
 
 ;   insert 1 pixel separator line
-    clr tmp0
+    clr temp
     rcall i2c_send_byte
 
     rcall i2c_stop

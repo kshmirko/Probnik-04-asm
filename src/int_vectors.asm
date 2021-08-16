@@ -24,7 +24,7 @@ RETI
 .org	SPIaddr		; Serial Transfer Complete
 RETI
 .org	URXCaddr	; USART, Rx Complete
-RETI
+rjmp UART_RX_ISR
 .org	UDREaddr	; USART Data Register Empty
 RETI
 .org	UTXCaddr	; USART, Tx Complete
@@ -36,7 +36,7 @@ RETI
 .org	ACIaddr		; Analog Comparator
 RETI
 .org	TWIaddr		; 2-wire Serial Interface
-RETI
+rjmp TWI_HANDLER
 .org	SPMRaddr	; Store Program Memory Ready
 RETI
 .org INT_VECTORS_SIZE
