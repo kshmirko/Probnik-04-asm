@@ -248,11 +248,14 @@ LRF_%:
     sts @0+1, temp
 .endmacro
 
+; adds register @0 to Z register
 .macro ADZR
     add ZL, @0
     adc ZH, r0
 .endmacro
 
+; loads address from memory @0 into Z
+; memory has following layout: ZL, ZH
 .macro RAM_DATA_IN_Z
     lds ZL, @0+0
     lds ZH, @0+1

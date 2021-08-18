@@ -20,8 +20,8 @@ Init:
     RAMFLUSH 
     GPRFLUSH
     StackInit RAMEND
-    UARTINIT_Syncro BAUDRATE, 'N', 1           ; настройка UART 9600, 8, 1, None
-    TWIINIT						; настройка TWI, 100kHz
+    UARTINIT_Syncro BAUDRATE, 'N', 1; настройка UART 9600, 8, 1, None
+    TWIINIT						    ; настройка TWI, 100kHz
 
     
 ; =============== Write Intro to UART =================================

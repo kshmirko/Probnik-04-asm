@@ -6,13 +6,15 @@
 i2c_slave_addr: .byte   1           ; device address
 i2c_err:        .byte   1           ; error var
 do_i2c:         .byte   1           ; i2c task
-i2c_index_data: .byte   1           ; shift from the beginning of transmitted data
+i2c_index_data: .byte   1           ; shift from the beginning of transmitted 
+                                    ; data (input or output)
 i2c_index_data_end: .byte 1         ; number of bytes to send/receive
 i2c_index_PageAddrL: .byte 1        ; 
 i2c_index_PageAddrH: .byte 1        ;
 i2c_busy:       .byte 1             ; if i2c_busy==1 TWI bus is busy
-i2c_buffer_addr_in:  .byte 2        ; address of the buffer to receve data 0-byte - low byte of address, 
-                                    ;                                      1-byte - high byte of address
+i2c_buffer_addr_in:  .byte 2        ; address of the buffer to receve data 
+                                    ;           0-byte - low byte of address, 
+                                    ;           1-byte - high byte of address
 i2c_buffer_addr_out: .byte 2        ; address of the buffer to send data
 
 .cseg
@@ -98,12 +100,14 @@ twi_18:
     OUTI TWCR, 0<<TWSTA|0<<TWSTO|1<<TWINT|0<<TWEA|1<<TWEN|1<<TWIE
     ret
 
+; SLA+W has been send, NACK received
 twi_20:
     sts i2c_busy, r0
     OUTI i2c_err, I2C_ERR_NA
     OUTI TWCR, 0<<TWSTA|1<<TWSTO|1<<TWINT|0<<TWEA|1<<TWEN|1<<TWIE
     ret
 
+; SLA+W has been send, ACK received
 twi_28:
     lds temp, i2c_index_data
     lds temp2, i2c_index_data_end
@@ -112,6 +116,7 @@ twi_28:
 
     OUTI TWCR, 0<<TWSTA|1<<TWSTO|1<<TWINT|0<<TWEA|1<<TWEN|1<TWIE
     sts i2c_busy, r0
+    ret
 
     send_out_28:
         rjmp twi_18
